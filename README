@@ -1,0 +1,59 @@
+# 🔬 Sistema de Análisis Clínico (Django)
+
+Este proyecto es una aplicación web desarrollada con **Django** para la gestión y análisis de datos clínicos.
+
+---
+
+## 🚀 Instalación y Configuración
+
+Sigue estos pasos para configurar y ejecutar el proyecto en tu máquina local.
+
+### 1. Requisitos Previos
+
+Asegúrate de tener instalado lo siguiente:
+
+* **Python 3.x**
+* **Git**
+
+### 2. Clonar el Repositorio
+
+Abre tu terminal o línea de comandos y ejecuta:
+
+```bash
+git clone [URL_DE_TU_REPOSITORIO]
+cd nombre-del-proyecto-clonado
+
+### 3. Configurar Entorno
+
+Ejecuta los siguientes comandos para crear un entorno virtual
+
+python -m venv venv
+
+Y el siguiente para activarlo (Windows)
+
+.\venv\Scripts\Activate.ps1
+
+### 4. Instalar Dependencias
+
+Con el entorno virtual activado, instala todas las librerías necesarias:
+
+pip install -r requirements.txt
+
+### 5. Configuración de la Base de Datos
+
+Ejecuta las migraciones para crear la estructura de la base de datos (por defecto, usa SQLite)
+
+python manage.py migrate
+
+### 6. Crear un Superusuario (Opcional)
+Si necesitas acceder al panel de administración de Django:
+
+python manage.py createsuperuser
+
+### 7. Ejecutar el Servidor
+
+Finalmente, inicia el servidor de desarrollo de Django:
+
+python manage.py runserver
+
+El proyecto estará disponible en tu navegador en la siguiente dirección: http://127.0.0.1:8000/

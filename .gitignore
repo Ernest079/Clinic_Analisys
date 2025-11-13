@@ -1,0 +1,31 @@
+# Entorno virtual
+/venv/
+/env/
+/.venv/
+/ENV/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Archivos del proyecto Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Archivos de configuración y secretos
+.env
+*.env
+secrets.py
+
+# Archivos de media (subidas de usuarios)
+/media/
+
+# Archivos estáticos (recolectados por collectstatic)
+/staticfiles/
+
+# Archivos de IDE y sistema operativo
+.vscode/
+.idea/
+.DS_Store
