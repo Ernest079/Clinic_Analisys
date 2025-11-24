@@ -1,0 +1,50 @@
+{% extends 'gestion/base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Panel General</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Pacientes Registrados</h5>
+                <p class="card-text display-4">{{ total_pacientes }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Diagnósticos Totales</h5>
+                <p class="card-text display-4">{{ total_diagnosticos }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3>Últimos Diagnósticos</h3>
+<table class="table table-striped bg-white shadow-sm rounded">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Paciente</th>
+            <th>Enfermedad</th>
+            <th>Médico</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for diag in ultimos_diagnosticos %}
+        <tr>
+            <td>{{ diag.fecha_diagnostico|date:"d M Y" }}</td>
+            <td>{{ diag.paciente }}</td>
+            <td>{{ diag.enfermedad_diagnosticada }}</td>
+            <td>{{ diag.medico.username }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">No hay diagnósticos recientes.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
