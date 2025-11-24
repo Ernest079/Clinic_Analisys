@@ -1,0 +1,66 @@
+{% extends 'gestion/base.html' %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0 text-danger"><i class="bi bi-virus"></i> Catálogo de Enfermedades</h4>
+        <a href="{% url 'crear_enfermedad' %}" class="btn btn-danger btn-sm">
+            <i class="bi bi-plus-lg"></i> Nueva Enfermedad
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 20%;">Nombre</th>
+                    <th style="width: 25%;">Síntomas y Signos</th>
+                    <th style="width: 25%;">Pruebas Requeridas</th>
+                    <th style="width: 15%;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for enf in enfermedades %}
+                <tr>
+                    <td>
+                        <strong>{{ enf.nombre }}</strong><br>
+                        <small class="text-muted">{{ enf.descripcion|truncatechars:50 }}</small>
+                    </td>
+                    <td>
+                        <small>
+                            {% for s in enf.sintomas.all|slice:":3" %}
+                                <span class="badge bg-warning text-dark">{{ s.nombre }}</span>
+                            {% endfor %}
+                            {% for s in enf.signos.all|slice:":2" %}
+                                <span class="badge bg-info text-dark">{{ s.nombre }}</span>
+                            {% endfor %}
+                            {% if enf.sintomas.count > 3 %}...{% endif %}
+                        </small>
+                    </td>
+                    <td>
+                        <small>
+                            {% for p in enf.pruebas_lab.all|slice:":3" %}
+                                <span class="badge border text-dark">{{ p.nombre }}</span>
+                            {% endfor %}
+                        </small>
+                    </td>
+                    <td>
+                        <a href="{% url 'editar_enfermedad' enf.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        <button onclick="confirmarEliminar('{% url 'eliminar_enfermedad' enf.id %}')" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center py-4">No hay enfermedades registradas.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function confirmarEliminar(url) {
+        if (confirm('¿Estás seguro de eliminar esta enfermedad? Esta acción no se puede deshacer.')) {
+            window.location.href = url;
+        }
+    }
+</script>
+{% endblock %}

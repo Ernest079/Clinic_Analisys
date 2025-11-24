@@ -1,10 +1,11 @@
-{% extends 'gestion/base.html' %}
-
-{% block content %}
+{% extends 'gestion/base.html' %} {% block content %}
 <div class="card shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <h4 class="mb-0">{{ titulo }}</h4>
-        <button class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nuevo {{ rol }}</button>
+        <a href="{% if rol == 'Médico' %}{% url 'crear_medico' %}{% else %}{% url 'crear_admin' %}{% endif %}"
+            class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Nuevo {{ rol }}
+        </a>
     </div>
     <div class="card-body p-0">
         <table class="table table-hover mb-0">
@@ -25,17 +26,21 @@
                     <td>{{ u.email }}</td>
                     <td>
                         {% if u.is_active %}
-                            <span class="badge bg-success">Activo</span>
+                        <span class="badge bg-success">Activo</span>
                         {% else %}
-                            <span class="badge bg-danger">Inactivo</span>
+                        <span class="badge bg-danger">Inactivo</span>
                         {% endif %}
                     </td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                        </button>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="text-center">No hay registros.</td></tr>
+                <tr>
+                    <td colspan="5" class="text-center">No hay registros.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>

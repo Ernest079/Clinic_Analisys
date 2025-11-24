@@ -1,7 +1,52 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# Create your models here.
+# ==========================================
+# 1. CATÁLOGOS Y MODELOS BASE (Independientes)
+# Deben ir primero porque Enfermedad los usa
+# ==========================================
+
+class Sintoma(models.Model):
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True, null=True)
+    def __str__(self): return self.nombre
+
+class Signo(models.Model):
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True, null=True)
+    def __str__(self): return self.nombre
+
+class PruebaLaboratorio(models.Model):
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True, null=True)
+    def __str__(self): return self.nombre
+
+class PruebaPosMortem(models.Model):
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True, null=True)
+    def __str__(self): return self.nombre
+
+# ==========================================
+# 2. ENFERMEDAD (Depende de los catálogos)
+# ==========================================
+
+class Enfermedad(models.Model):
+    nombre = models.CharField(max_length=200, unique=True)
+    descripcion = models.TextField()
+    
+    # Relaciones ManyToMany
+    sintomas = models.ManyToManyField(Sintoma, blank=True, related_name='enfermedades')
+    signos = models.ManyToManyField(Signo, blank=True, related_name='enfermedades')
+    pruebas_lab = models.ManyToManyField(PruebaLaboratorio, blank=True, related_name='enfermedades')
+    pruebas_postmortem = models.ManyToManyField(PruebaPosMortem, blank=True, related_name='enfermedades')
+
+    def __str__(self):
+        return self.nombre
+
+# ==========================================
+# 3. PACIENTE (Independiente de Enfermedad)
+# ==========================================
+
 class Paciente(models.Model):
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
@@ -13,43 +58,33 @@ class Paciente(models.Model):
 
     def __str__(self):
         return f"{self.nombre} {self.apellido}"
-    
-class Enfermedad(models.Model):
-    nombre = models.CharField(max_length=200, unique=True)
-    descripcion = models.TextField()
 
-    def __str__(self):
-        return self.nombre
-    
-class Sintoma(models.Model):
-    nombre = models.CharField(max_length=200)
-    descripcion = models.TextField(blank=True, null=True)
-    enfermedades = models.ManyToManyField(Enfermedad, related_name='sintomas')
+# ==========================================
+# 4. DIAGNÓSTICO (Depende de Paciente y Enfermedad)
+# ==========================================
 
-    def __str__(self):
-        return self.nombre
-
-class PruebaLaboratorio(models.Model):
-    nombre = models.CharField(max_length=200)
-    descripcion = models.TextField(blank=True, null=True)
-    enfermedades = models.ManyToManyField(Enfermedad, related_name='pruebas_laboratorio')
-    
-    def __str__(self):
-        return self.nombre
-    
 class Diagnostico(models.Model):
     paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
-    medico = models.ForeignKey(User, on_delete=models.SET_NULL, null=True) # El User que hace el diagnóstico
+    medico = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    
+    # AHORA SÍ FUNCIONA: Enfermedad ya fue leída por Python arriba
     enfermedad_diagnosticada = models.ForeignKey(Enfermedad, on_delete=models.SET_NULL, null=True)
+    
+    # Estas relaciones son opcionales aquí porque ya están definidas en la enfermedad,
+    # pero las mantenemos si quieres guardar qué síntomas ESPECÍFICOS tuvo este paciente.
     sintomas_presentados = models.ManyToManyField(Sintoma, blank=True)
     pruebas_realizadas = models.ManyToManyField(PruebaLaboratorio, blank=True)
+    
     notas_adicionales = models.TextField(blank=True, null=True)
     fecha_diagnostico = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Diagnóstico de {self.paciente} - {self.fecha_diagnostico.strftime('%Y-%m-%d')}"
 
-# Modelo para el Tratamiento
+# ==========================================
+# 5. TRATAMIENTO (Depende de Diagnóstico)
+# ==========================================
+
 class Tratamiento(models.Model):
     diagnostico = models.ForeignKey(Diagnostico, on_delete=models.CASCADE, related_name='tratamientos')
     descripcion = models.TextField()
