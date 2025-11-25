@@ -1,0 +1,92 @@
+{% extends 'gestion/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-cpu"></i> Motor de Inferencia</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Seleccione los signos y síntomas que presenta el paciente para calcular probabilidades.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="fw-bold text-primary">Síntomas (Subjetivos)</label>
+                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 5px;">
+                            {{ form.sintomas }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-bold text-danger">Signos (Objetivos)</label>
+                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 5px;">
+                            {{ form.signos }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-magic"></i> Calcular Diagnóstico Probable
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        {% if resultado %}
+            <h3 class="mb-3">Resultados del Análisis</h3>
+            
+            {% if diagnostico_sugerido %}
+                {% for item in diagnostico_sugerido %}
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0 text-primary">{{ item.enfermedad.nombre }}</h5>
+                            <span class="badge bg-dark">{{ item.porcentaje }}% Probabilidad</span>
+                        </div>
+                        
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar 
+                                {% if item.porcentaje > 75 %}bg-danger
+                                {% elif item.porcentaje > 50 %}bg-warning text-dark
+                                {% else %}bg-success{% endif %}" 
+                                role="progressbar" 
+                                style="width: {{ item.porcentaje }}%;" 
+                                aria-valuenow="{{ item.porcentaje }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ item.porcentaje }}%
+                            </div>
+                        </div>
+
+                        <div class="mt-2 small text-muted">
+                            Coinciden {{ item.coincidencias }} de {{ item.total_items }} criterios definidos.
+                            <br>
+                            <strong>Pruebas recomendadas:</strong>
+                            {% for p in item.enfermedad.pruebas_lab.all %}
+                                <span class="badge border text-dark">{{ p.nombre }}</span>
+                            {% empty %}
+                                Ninguna específica.
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> No se encontró ninguna enfermedad que coincida con los síntomas seleccionados.
+                </div>
+            {% endif %}
+
+        {% else %}
+            <div class="text-center py-5 text-muted bg-white rounded shadow-sm">
+                <i class="bi bi-activity display-1"></i>
+                <h4 class="mt-3">Esperando datos...</h4>
+                <p>Ingrese los síntomas a la izquierda para iniciar el motor de inferencia.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

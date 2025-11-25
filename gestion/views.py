@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Paciente, Diagnostico, Enfermedad
+from .models import Paciente, Diagnostico, Enfermedad, Sintoma, Signo
 from django.contrib.auth.models import User
 from .forms import PacienteForm, RegistroUsuarioForm
 from django.contrib import messages
 from django.contrib.auth.models import Group
-from .forms import EnfermedadForm
+from .forms import EnfermedadForm, SintomaForm, SignoForm, DiagnosticoForm, InferenciaForm
 from django.shortcuts import get_object_or_404
-
+from django.db.models import Count
 
 # 1. Vista del Dashboard (Protegida con login)
 @login_required
@@ -178,3 +178,194 @@ def eliminar_enfermedad(request, id):
     enfermedad.delete()
     messages.success(request, 'Enfermedad eliminada.')
     return redirect('lista_enfermedades') 
+
+# |-----------------------------CRUD DIAGNOSTICOS----------------------------------|
+
+# ==========================================
+# 1. CRUD SÍNTOMAS
+# ==========================================
+@login_required
+def lista_sintomas(request):
+    sintomas = Sintoma.objects.all().order_by('nombre')
+    return render(request, 'gestion/lista_sintomas.html', {'items': sintomas, 'tipo': 'Síntoma'})
+
+@login_required
+def crear_sintoma(request):
+    if request.method == 'POST':
+        form = SintomaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Síntoma agregado.')
+            return redirect('lista_sintomas')
+    else:
+        form = SintomaForm()
+    return render(request, 'gestion/formulario.html', {'form': form, 'titulo': 'Nuevo Síntoma', 'boton': 'Guardar'})
+
+@login_required
+def editar_sintoma(request, id):
+    obj = get_object_or_404(Sintoma, id=id)
+    if request.method == 'POST':
+        form = SintomaForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_sintomas')
+    else:
+        form = SintomaForm(instance=obj)
+    return render(request, 'gestion/formulario.html', {'form': form, 'titulo': 'Editar Síntoma', 'boton': 'Actualizar'})
+
+@login_required
+def eliminar_sintoma(request, id):
+    obj = get_object_or_404(Sintoma, id=id)
+    obj.delete()
+    return redirect('lista_sintomas')
+
+# ==========================================
+# 2. CRUD SIGNOS
+# ==========================================
+@login_required
+def lista_signos(request):
+    signos = Signo.objects.all().order_by('nombre')
+    return render(request, 'gestion/lista_signos.html', {'items': signos, 'tipo': 'Signo'})
+
+@login_required
+def crear_signo(request):
+    if request.method == 'POST':
+        form = SignoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Signo agregado.')
+            return redirect('lista_signos')
+    else:
+        form = SignoForm()
+    return render(request, 'gestion/formulario.html', {'form': form, 'titulo': 'Nuevo Signo', 'boton': 'Guardar'})
+
+@login_required
+def editar_signo(request, id):
+    obj = get_object_or_404(Signo, id=id)
+    if request.method == 'POST':
+        form = SignoForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_signos')
+    else:
+        form = SignoForm(instance=obj)
+    return render(request, 'gestion/formulario.html', {'form': form, 'titulo': 'Editar Signo', 'boton': 'Actualizar'})
+
+@login_required
+def eliminar_signo(request, id):
+    obj = get_object_or_404(Signo, id=id)
+    obj.delete()
+    return redirect('lista_signos')
+
+# ==========================================
+# 3. CRUD DIAGNÓSTICOS (El más importante)
+# ==========================================
+@login_required
+def lista_diagnosticos(request):
+    # Optimizamos la consulta con select_related para traer datos del paciente y medico en una sola query
+    diagnosticos = Diagnostico.objects.select_related('paciente', 'medico', 'enfermedad_diagnosticada').all().order_by('-fecha_diagnostico')
+    return render(request, 'gestion/lista_diagnosticos.html', {'diagnosticos': diagnosticos})
+
+@login_required
+def crear_diagnostico(request):
+    if request.method == 'POST':
+        form = DiagnosticoForm(request.POST)
+        if form.is_valid():
+            diagnostico = form.save(commit=False)
+            diagnostico.medico = request.user  # ASIGNACIÓN AUTOMÁTICA DEL MÉDICO
+            diagnostico.save()
+            form.save_m2m() # Importante cuando hay ManyToMany en commit=False
+            messages.success(request, 'Diagnóstico registrado exitosamente.')
+            return redirect('lista_diagnosticos')
+    else:
+        form = DiagnosticoForm()
+    
+    return render(request, 'gestion/formulario.html', {'form': form, 'titulo': 'Realizar Diagnóstico', 'boton': 'Guardar Diagnóstico'})
+
+@login_required
+def editar_diagnostico(request, id):
+    diagnostico = get_object_or_404(Diagnostico, id=id)
+    # Opcional: Validar que solo el médico que lo creó pueda editarlo
+    # if diagnostico.medico != request.user: return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = DiagnosticoForm(request.POST, instance=diagnostico)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Diagnóstico actualizado.')
+            return redirect('lista_diagnosticos')
+    else:
+        form = DiagnosticoForm(instance=diagnostico)
+    return render(request, 'gestion/formulario.html', {'form': form, 'titulo': 'Editar Diagnóstico', 'boton': 'Actualizar'})
+
+@login_required
+def eliminar_diagnostico(request, id):
+    diagnostico = get_object_or_404(Diagnostico, id=id)
+    diagnostico.delete()
+    messages.success(request, 'Diagnóstico eliminado.')
+    return redirect('lista_diagnosticos')
+
+# ==========================================
+# 1. MOTOR DE INFERENCIA
+# ==========================================
+@login_required
+def motor_inferencia(request):
+    resultado = None
+    diagnostico_sugerido = []
+
+    if request.method == 'POST':
+        form = InferenciaForm(request.POST)
+        if form.is_valid():
+            # 1. Obtenemos los datos que ingresó el médico
+            sintomas_input = form.cleaned_data['sintomas']
+            signos_input = form.cleaned_data['signos']
+            
+            # Convertimos a sets (conjuntos) para hacer operaciones matemáticas rápidas
+            ids_sintomas_input = set(s.id for s in sintomas_input)
+            ids_signos_input = set(s.id for s in signos_input)
+            
+            todas_enfermedades = Enfermedad.objects.prefetch_related('sintomas', 'signos')
+
+            ranking = []
+
+            # 2. EL ALGORITMO DE PREDICCIÓN
+            for enfermedad in todas_enfermedades:
+                # Obtenemos los IDs de los síntomas/signos reales de la enfermedad
+                ids_sintomas_reales = set(s.id for s in enfermedad.sintomas.all())
+                ids_signos_reales = set(s.id for s in enfermedad.signos.all())
+
+                # Unión de características de la enfermedad (El total de puntos posibles)
+                total_caracteristicas_enfermedad = len(ids_sintomas_reales) + len(ids_signos_reales)
+
+                if total_caracteristicas_enfermedad > 0:
+                    # Intersección: ¿Cuántos coinciden?
+                    coincidencias_sintomas = len(ids_sintomas_input.intersection(ids_sintomas_reales))
+                    coincidencias_signos = len(ids_signos_input.intersection(ids_signos_reales))
+                    
+                    total_coincidencias = coincidencias_sintomas + coincidencias_signos
+
+                    # Cálculo de Probabilidad (Simple Ratio)
+                    # Fórmula: (Coincidencias / Total de la Enfermedad) * 100
+                    porcentaje = (total_coincidencias / total_caracteristicas_enfermedad) * 100
+                    
+                    # Solo agregamos si hay alguna coincidencia relevante (>0%)
+                    if porcentaje > 0:
+                        ranking.append({
+                            'enfermedad': enfermedad,
+                            'porcentaje': round(porcentaje, 1),
+                            'coincidencias': total_coincidencias,
+                            'total_items': total_caracteristicas_enfermedad
+                        })
+
+            # 3. Ordenamos de mayor a menor probabilidad
+            diagnostico_sugerido = sorted(ranking, key=lambda x: x['porcentaje'], reverse=True)
+            resultado = True
+
+    else:
+        form = InferenciaForm()
+
+    return render(request, 'gestion/motor_inferencia.html', {
+        'form': form,
+        'resultado': resultado,
+        'diagnostico_sugerido': diagnostico_sugerido
+    })

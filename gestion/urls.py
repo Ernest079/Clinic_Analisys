@@ -23,4 +23,21 @@ urlpatterns = [
     path('enfermedades/nueva/', views.crear_enfermedad, name='crear_enfermedad'),
     path('enfermedades/editar/<int:id>/', views.editar_enfermedad, name='editar_enfermedad'),
     path('enfermedades/eliminar/<int:id>/', views.eliminar_enfermedad, name='eliminar_enfermedad'),
+
+    path('sintomas/', views.lista_sintomas, name='lista_sintomas'),
+    path('sintomas/nuevo/', views.crear_sintoma, name='crear_sintoma'),
+    path('sintomas/editar/<int:id>/', views.editar_sintoma, name='editar_sintoma'),
+    path('sintomas/eliminar/<int:id>/', views.eliminar_sintoma, name='eliminar_sintoma'),
+
+    path('signos/', views.lista_signos, name='lista_signos'),
+    path('signos/nuevo/', views.crear_signo, name='crear_signo'),
+    path('signos/editar/<int:id>/', views.editar_signo, name='editar_signo'),
+    path('signos/eliminar/<int:id>/', views.eliminar_signo, name='eliminar_signo'),
+
+    path('diagnosticos/', views.lista_diagnosticos, name='lista_diagnosticos'),
+    path('diagnosticos/nuevo/', views.crear_diagnostico, name='crear_diagnostico'),
+    path('diagnosticos/editar/<int:id>/', views.editar_diagnostico, name='editar_diagnostico'),
+    path('diagnosticos/eliminar/<int:id>/', views.eliminar_diagnostico, name='eliminar_diagnostico'),
+
+    path('inferencia/', views.motor_inferencia, name='motor_inferencia'),
 ]

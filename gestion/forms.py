@@ -54,3 +54,53 @@ class EnfermedadForm(forms.ModelForm):
             'pruebas_lab': forms.CheckboxSelectMultiple(),
             'pruebas_postmortem': forms.CheckboxSelectMultiple(),
         }
+
+class SignoForm(forms.ModelForm):
+    class Meta:
+        model = Signo
+        fields = ['nombre', 'descripcion']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+
+class SintomaForm(forms.ModelForm):
+    class Meta:
+        model = Sintoma
+        fields = ['nombre', 'descripcion']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+
+# --- FORMULARIO PRINCIPAL: DIAGNÓSTICO ---
+class DiagnosticoForm(forms.ModelForm):
+    class Meta:
+        model = Diagnostico
+        fields = ['paciente', 'enfermedad_diagnosticada', 'sintomas_presentados', 'pruebas_realizadas', 'notas_adicionales']
+        widgets = {
+            'paciente': forms.Select(attrs={'class': 'form-select'}),
+            'enfermedad_diagnosticada': forms.Select(attrs={'class': 'form-select'}),
+            'notas_adicionales': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            
+            # Usamos checkboxes para que el médico marque lo que vio
+            'sintomas_presentados': forms.CheckboxSelectMultiple(),
+            'pruebas_realizadas': forms.CheckboxSelectMultiple(),
+        }
+
+# --- FORMULARIOS PARA INFERIR ---
+class InferenciaForm(forms.Form):
+    # Usamos ModelMultipleChoiceField para que Django maneje los IDs correctamente
+    sintomas = forms.ModelMultipleChoiceField(
+        queryset=Sintoma.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Seleccione los Síntomas del Paciente"
+    )
+    signos = forms.ModelMultipleChoiceField(
+        queryset=Signo.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Seleccione los Signos Observados"
+    )
+

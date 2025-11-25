@@ -1,0 +1,35 @@
+{% extends 'gestion/base.html' %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Catálogo de {{ tipo }}s</h4>
+        <a href="{% url 'crear_signo' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Nuevo {{ tipo }}
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td class="fw-bold">{{ item.nombre }}</td>
+                    <td>{{ item.descripcion|default:"-" }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'editar_signo' item.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        <a href="{% url 'eliminar_signo' item.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar?')"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

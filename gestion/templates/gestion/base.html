@@ -22,7 +22,7 @@
     {% if user.is_authenticated %}
     <div class="d-flex flex-column flex-shrink-0 p-3 sidebar" style="width: 250px;">
         <a href="{% url 'dashboard' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-            <span class="fs-4">🏥 ClínicaApp</span>
+            <i class="bi bi-hospital"></i><span class="fs-4">MedicaNal</span>
         </a>
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
@@ -31,7 +31,7 @@
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
-            <li class="nav-header text-uppercase small mt-3 mb-1 text-muted">Gestión de Usuarios</li>
+            <li class="nav-header text-uppercase small mt-3 mb-1">Gestión de Usuarios</li>
             <li>
                 <a href="{% url 'lista_medicos' %}" class="nav-link {% if 'medicos' in request.path %}active{% endif %}">
                     <i class="bi bi-person-badge"></i> Médicos
@@ -42,13 +42,6 @@
                     <i class="bi bi-people"></i> Pacientes
                 </a>
             </li>
-
-            <li>
-                <a href="{% url 'lista_enfermedades' %}" class="nav-link {% if 'enfermedades' in request.path %}active{% endif %}">
-                    <i class="bi bi-virus2"></i> Enfermedades
-                </a>
-            </li>
-            
             {% if user.is_superuser %}
             <li>
                 <a href="{% url 'lista_admins' %}" class="nav-link {% if 'admins' in request.path %}active{% endif %}">
@@ -56,6 +49,35 @@
                 </a>
             </li>
             {% endif %}
+
+            <li class="nav-header text-uppercase small mt-3 mb-1">Gestión de Datos</li>
+            <li>
+                <a href="{% url 'lista_enfermedades' %}" class="nav-link {% if 'enfermedades' in request.path %}active{% endif %}">
+                    <i class="bi bi-virus2"></i> Enfermedades
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'lista_sintomas' %}" class="nav-link {% if 'sintomas' in request.path %}active{% endif %}">
+                    <i class="bi bi-journal-medical"></i> Sintomas
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'lista_signos' %}" class="nav-link {% if 'signos' in request.path %}active{% endif %}">
+                    <i class="bi bi-clipboard2-pulse"></i> Signos
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'lista_diagnosticos' %}" class="nav-link {% if 'diagnosticos' in request.path %}active{% endif %}">
+                    <i class="bi bi-file-medical"></i> Diagnósticos
+                </a>
+            </li>
+
+            <li class="nav-header text-uppercase small mt-3 mb-1">Gestión de Datos</li>
+            <li>
+                <a href="{% url 'motor_inferencia' %}" class="nav-link text-white">
+                    <i class="bi bi-cpu"></i> Predicción IA
+                </a>
+            </li>
         </ul>
         <hr>
         <div class="dropdown">
